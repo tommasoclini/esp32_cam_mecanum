@@ -1,0 +1,6 @@
+source "/home/tommaso/esp/esp-idf/components/bootloader/Kconfig.projbuild"
+source "/home/tommaso/esp/esp-idf/components/esp_app_format/Kconfig.projbuild"
+source "/home/tommaso/esp/esp-idf/components/esp_rom/Kconfig.projbuild"
+source "/home/tommaso/esp/esp-idf/components/esptool_py/Kconfig.projbuild"
+source "/home/tommaso/esp/esp-idf/components/partition_table/Kconfig.projbuild"
+source "/home/tommaso/esp/workspaces/idf-5.1.2_wss/esp32_mecanum/ESP32_CAM/main/Kconfig.projbuild"
