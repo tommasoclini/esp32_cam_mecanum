@@ -1,12 +1,12 @@
 menu "App Connectivity selection"
 
-    choice APP_CONNECTIVITY_TYPE_SDK
+    choice APP_CONNECTIVITY_TYPE
         prompt "App wireless connectivity type"
         default APP_CONNECTIVITY_TYPE_AP
         config APP_CONNECTIVITY_TYPE_AP
-            bool "Access Point"
-        config APP_CONNECTIVITY_TYPE_STA
             bool "Station"
+        config APP_CONNECTIVITY_TYPE_STA
+            bool "Access Point"
         config APP_CONNECTIVITY_TYPE_EAP
             bool "EAP Station"
     endchoice
@@ -137,6 +137,11 @@ menu "Connectivity(WiFi EAP STA) Configuration"
             default y
             help
                 Validate the servers' certificate using CA cert.
+    endif
+
+    if !EXAMPLE_WPA2_ENTERPRISE
+        config EXAMPLE_VALIDATE_SERVER_CERT
+            default y
     endif
 
     choice

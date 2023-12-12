@@ -5,7 +5,8 @@
  *      Author: Tommaso
  */
 
-#include <connectivity.h>
+#include <connectivity_private.h>
+//#include <connectivity.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -157,7 +158,7 @@ static void initialise_wifi(void)
     ESP_ERROR_CHECK(esp_wifi_start());
 }
 
-void app_connect(void){
+void app_connect_eap(void){
 	ESP_LOGI(TAG, "Starting WiFi STA");
 	initialise_wifi();
 }

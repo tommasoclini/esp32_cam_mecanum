@@ -25,6 +25,16 @@
 #define portTICK_RATE_MS portTICK_PERIOD_MS
 #endif
 
+#if CONFIG_APP_CONNECTIVITY_TYPE_STA
+#define SET_APP_CONNECTIVITY APP_CONNECTIVITY_STA
+#elif CONFIG_APP_CONNECTIVITY_TYPE_AP
+#define SET_APP_CONNECTIVITY APP_CONNECTIVITY_AP
+#elif CONFIG_APP_CONNECTIVITY_TYPE_EAP
+#define SET_APP_CONNECTIVITY APP_CONNECTIVITY_EAP_STA
+#else
+#define SET_APP_CONNECTIVITY APP_CONNECTIVITY_AP
+#endif
+
 static const char *TAG = "ESP32-CAM_ROVER";
 
 static void disconnect_handler(void* arg, esp_event_base_t event_base,
@@ -67,10 +77,11 @@ void app_main(void)
 		ESP_ERROR_CHECK(ret);
     }
 
-	app_connect();
+	app_connect(SET_APP_CONNECTIVITY);
 	start_rover_comm();
 
 	static httpd_handle_t server = NULL;
+
 	{
 		wifi_mode_t current_mode;
 		esp_wifi_get_mode(&current_mode);
