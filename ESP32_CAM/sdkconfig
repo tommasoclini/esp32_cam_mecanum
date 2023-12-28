@@ -351,8 +351,8 @@ CONFIG_APP_CONNECTIVITY_TYPE_AP=y
 #
 # Connectivity(WiFi AP) Configuration
 #
-CONFIG_ESP_WIFI_SSID_AP="rover_ap_1"
-CONFIG_ESP_WIFI_PASSWORD_AP="rover_ap_1_passwd"
+CONFIG_ESP_WIFI_SSID_AP="rover_ap"
+CONFIG_ESP_WIFI_PASSWORD_AP="rover_ap_passwd"
 CONFIG_ESP_WIFI_CHANNEL=1
 CONFIG_ESP_MAX_STA_CONN=4
 # end of Connectivity(WiFi AP) Configuration
@@ -407,12 +407,15 @@ CONFIG_UART_TXD=13
 # end of Rover Uart Configuration
 
 #
-# Rover UDP server Configuration
+# Rover TCP server Configuration
 #
 CONFIG_EXAMPLE_IPV4=y
 # CONFIG_EXAMPLE_IPV6 is not set
 CONFIG_EXAMPLE_PORT=8888
-# end of Rover UDP server Configuration
+CONFIG_EXAMPLE_KEEPALIVE_IDLE=5
+CONFIG_EXAMPLE_KEEPALIVE_INTERVAL=5
+CONFIG_EXAMPLE_KEEPALIVE_COUNT=3
+# end of Rover TCP server Configuration
 
 #
 # Compiler options
