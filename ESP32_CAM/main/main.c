@@ -20,6 +20,11 @@
 #include <http_server.h>
 #include <rover_communication.h>
 
+#include <cJSON.h>
+#include <lwpkt/lwpkt.h>
+
+#include <driver/gpio.h>
+
 // support IDF 5.x
 #ifndef portTICK_RATE_MS
 #define portTICK_RATE_MS portTICK_PERIOD_MS
@@ -63,7 +68,12 @@ static void connect_handler(void* arg, esp_event_base_t event_base,
 
 void app_main(void)
 {
-    if(ESP_OK != init_camera()) {
+	/*gpio_set_intr_type(GPIO_NUM_4, GPIO_INTR_DISABLE);
+	gpio_set_direction(GPIO_NUM_4, GPIO_MODE_OUTPUT);
+	gpio_set_pull_mode(GPIO_NUM_5, GPIO_FLOATING);
+	gpio_set_level(GPIO_NUM_4, 1);*/
+	
+	if(ESP_OK != init_camera()) {
         return;
     }
 

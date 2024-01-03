@@ -11,4 +11,7 @@ idf_component_register (SRCS ./main.c
                         esp_http_server
                         esp_timer
                         esp_wifi
-                        wpa_supplicant)
+                        wpa_supplicant
+                        cjson
+                        lwpkt
+                        lwrb)

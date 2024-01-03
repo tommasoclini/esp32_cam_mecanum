@@ -20,6 +20,7 @@
 #include "esp_event.h"
 #include "nvs_flash.h"
 #include "esp_netif.h"
+#include <esp_log.h>
 
 #include "lwip/err.h"
 #include "lwip/sockets.h"
@@ -27,6 +28,8 @@
 #include <lwip/netdb.h>
 
 #include <rover_communication.h>
+#include <lwrb/lwrb.h>
+#include <lwpkt/lwpkt.h>
 
 #define UART_TXD (CONFIG_UART_TXD)
 #define UART_RXD (CONFIG_UART_RXD)
@@ -45,9 +48,23 @@ static const char *TAG = "rover communication";
 
 #define BUF_SIZE 1024
 
+#define UART_RX_RB_BUFFER_SIZE 512
+#define UART_TX_RB_BUFFER_SIZE 512
+
+lwpkt_t uart_lwpkt;
+
+lwrb_t uart_rx_buffer;
+uint8_t uart_rx_data_buffer[UART_RX_RB_BUFFER_SIZE];
+
+lwrb_t uart_tx_buffer;
+uint8_t uart_tx_data_buffer[UART_TX_RB_BUFFER_SIZE];
+
 static esp_err_t uart_init();
 static esp_err_t tcp_server_init();
+static esp_err_t start_lwpkt();
+void uart_tx_rb_evt_fn(lwrb_t* buff, lwrb_evt_type_t type, lwrb_sz_t len);
 static void tcp_server_task(void *pvParameters);
+static int send_data_to_rover(const void* src, size_t size);
 
 static esp_err_t uart_init(){
 	/* Configure parameters of an UART driver,
@@ -99,16 +116,7 @@ static void do_retransmit(const int sock)
 
             // send() can return less bytes than supplied length.
             // Walk-around for robust implementation.
-            int to_write = len;
-            while (to_write > 0) {
-                int written = uart_write_bytes(UART_PORT_NUM, rx_buffer + (len - to_write), to_write);//send(sock, rx_buffer + (len - to_write), to_write, 0);
-                /*if (written < 0) {
-                    ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
-                    // Failed to retransmit, giving up
-                    return;
-                }*/
-                to_write -= written;
-            }
+            send_data_to_rover(rx_buffer, len);
         }
     } while (len > 0);
 }
@@ -214,7 +222,39 @@ CLEAN_UP:
     vTaskDelete(NULL);
 }
 
+static int send_data_to_rover(const void* src, size_t size){
+    return lwpkt_write(&uart_lwpkt, src, size) == lwpktOK ? size : 0;
+}
+
+static esp_err_t start_lwpkt(){
+    lwrb_init(&uart_tx_buffer, uart_tx_data_buffer, UART_TX_RB_BUFFER_SIZE);
+    lwrb_init(&uart_rx_buffer, uart_rx_data_buffer, UART_RX_RB_BUFFER_SIZE);
+    lwrb_set_evt_fn(&uart_tx_buffer, uart_tx_rb_evt_fn);
+
+    lwpkt_init(&uart_lwpkt, &uart_tx_buffer, &uart_rx_buffer);
+    return ESP_OK;
+}
+
+void uart_tx_rb_evt_fn(lwrb_t* buff, lwrb_evt_type_t type, lwrb_sz_t len){
+	switch (type) {
+		case LWRB_EVT_WRITE:
+            lwrb_sz_t size = lwrb_get_linear_block_read_length(buff);
+			uart_write_bytes(UART_PORT_NUM, lwrb_get_linear_block_read_address(buff), size);
+			lwrb_skip(buff, size);
+			size = lwrb_get_linear_block_read_length(buff);
+			if (size > 0) {
+				uart_write_bytes(UART_PORT_NUM, lwrb_get_linear_block_read_address(buff), size);
+			}
+			lwrb_skip(buff, size);
+
+			break;
+		default:
+			break;
+	}
+}
+
 void start_rover_comm(void){
 	ESP_ERROR_CHECK(uart_init());
 	ESP_ERROR_CHECK(tcp_server_init());
+    ESP_ERROR_CHECK(start_lwpkt());
 }

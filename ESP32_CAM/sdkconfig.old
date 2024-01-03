@@ -343,16 +343,16 @@ CONFIG_PARTITION_TABLE_MD5=y
 #
 # App Connectivity selection
 #
-CONFIG_APP_CONNECTIVITY_TYPE_AP=y
-# CONFIG_APP_CONNECTIVITY_TYPE_STA is not set
+# CONFIG_APP_CONNECTIVITY_TYPE_AP is not set
+CONFIG_APP_CONNECTIVITY_TYPE_STA=y
 # CONFIG_APP_CONNECTIVITY_TYPE_EAP is not set
 # end of App Connectivity selection
 
 #
 # Connectivity(WiFi AP) Configuration
 #
-CONFIG_ESP_WIFI_SSID_AP="rover_ap_1"
-CONFIG_ESP_WIFI_PASSWORD_AP="rover_ap_1_passwd"
+CONFIG_ESP_WIFI_SSID_AP="rover_ap"
+CONFIG_ESP_WIFI_PASSWORD_AP="rover_ap_passwd"
 CONFIG_ESP_WIFI_CHANNEL=1
 CONFIG_ESP_MAX_STA_CONN=4
 # end of Connectivity(WiFi AP) Configuration
