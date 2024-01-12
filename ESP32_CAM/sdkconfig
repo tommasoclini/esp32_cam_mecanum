@@ -407,15 +407,12 @@ CONFIG_UART_TXD=13
 # end of Rover Uart Configuration
 
 #
-# Rover TCP server Configuration
+# Rover UDP server Configuration
 #
 CONFIG_EXAMPLE_IPV4=y
 # CONFIG_EXAMPLE_IPV6 is not set
 CONFIG_EXAMPLE_PORT=8888
-CONFIG_EXAMPLE_KEEPALIVE_IDLE=5
-CONFIG_EXAMPLE_KEEPALIVE_INTERVAL=5
-CONFIG_EXAMPLE_KEEPALIVE_COUNT=3
-# end of Rover TCP server Configuration
+# end of Rover UDP server Configuration
 
 #
 # Compiler options
