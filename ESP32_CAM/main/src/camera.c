@@ -101,6 +101,7 @@ esp_err_t init_camera(void)
     }
     sensor_t* camera = esp_camera_sensor_get();
     camera->set_vflip(camera, 1);
+    camera->set_hmirror(camera, 1);
 
     return ESP_OK;
 }
