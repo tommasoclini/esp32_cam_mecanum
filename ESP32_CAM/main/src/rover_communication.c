@@ -46,10 +46,10 @@
 
 static const char *TAG = "rover communication";
 
-#define BUF_SIZE 1024
+#define BUF_SIZE 512
 
-#define UART_RX_RB_BUFFER_SIZE 512
-#define UART_TX_RB_BUFFER_SIZE 512
+#define UART_RX_RB_BUFFER_SIZE 256
+#define UART_TX_RB_BUFFER_SIZE 256
 
 lwpkt_t uart_lwpkt;
 

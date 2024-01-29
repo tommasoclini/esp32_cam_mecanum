@@ -12,37 +12,32 @@
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 
-#include "lwip/err.h"
-#include "lwip/sys.h"
+/*#include "lwip/err.h"
+#include "lwip/sys.h"*/
 
 #include <camera.h>
-#include <connectivity.h>
 #include <http_server.h>
 #include <rover_communication.h>
 
 #include <cJSON.h>
 #include <lwpkt/lwpkt.h>
 
-#include <driver/gpio.h>
+#include <esp_bt.h>
+
+#include "esp_blufi_api.h"
+
+#include "esp_blufi.h"
+
+#include <blufi_wrap.h>
 
 // support IDF 5.x
 #ifndef portTICK_RATE_MS
 #define portTICK_RATE_MS portTICK_PERIOD_MS
 #endif
 
-#if CONFIG_APP_CONNECTIVITY_TYPE_STA
-#define SET_APP_CONNECTIVITY APP_CONNECTIVITY_STA
-#elif CONFIG_APP_CONNECTIVITY_TYPE_AP
-#define SET_APP_CONNECTIVITY APP_CONNECTIVITY_AP
-#elif CONFIG_APP_CONNECTIVITY_TYPE_EAP
-#define SET_APP_CONNECTIVITY APP_CONNECTIVITY_EAP_STA
-#else
-#define SET_APP_CONNECTIVITY APP_CONNECTIVITY_AP
-#endif
-
 static const char *TAG = "ESP32-CAM_ROVER";
 
-static void disconnect_handler(void* arg, esp_event_base_t event_base,
+/*static void disconnect_handler(void* arg, esp_event_base_t event_base,
                                int32_t event_id, void* event_data)
 {
     httpd_handle_t* server = (httpd_handle_t*) arg;
@@ -65,6 +60,7 @@ static void connect_handler(void* arg, esp_event_base_t event_base,
         *server = start_webserver();
     }
 }
+*/
 
 void app_main(void)
 {
@@ -77,34 +73,37 @@ void app_main(void)
         return;
     }
 
-    {
-		//Initialize NVS
-		esp_err_t ret = nvs_flash_init();
-		if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-		  ESP_ERROR_CHECK(nvs_flash_erase());
-		  ret = nvs_flash_init();
-		}
-		ESP_ERROR_CHECK(ret);
+	esp_err_t ret;
+
+    // Initialize NVS
+    ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK( ret );
+
+    initialise_wifi();
+
+    ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT));
+
+    esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+    ret = esp_bt_controller_init(&bt_cfg);
+    if (ret) {
+        ESP_LOGE(TAG, "%s initialize bt controller failed: %s\n", __func__, esp_err_to_name(ret));
     }
 
-	app_connect(SET_APP_CONNECTIVITY);
+    ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
+    if (ret) {
+        ESP_LOGE(TAG, "%s enable bt controller failed: %s\n", __func__, esp_err_to_name(ret));
+        return;
+    }
+
+    blufi_wrap_init(NULL);
+
+    ESP_LOGI(TAG, "BLUFI VERSION %04x\n", esp_blufi_get_version());
+
 	start_rover_comm();
 
-	static httpd_handle_t server = NULL;
-
-	{
-		wifi_mode_t current_mode;
-		esp_wifi_get_mode(&current_mode);
-		if (current_mode == WIFI_MODE_STA){
-		    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &connect_handler, &server));
-			ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &disconnect_handler, &server));
-		}
-	}
-
-	/* Start the server for the first time */
-	/*server = */start_webserver();
-
-	/*while (server) {
-		sleep(5);
-	}*/
+	start_webserver();
 }

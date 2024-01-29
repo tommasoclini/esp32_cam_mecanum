@@ -7,7 +7,9 @@
   "idf.port": "/dev/ttyUSB0",
   "idf.flashType": "UART",
   "files.associations": {
-    "sdkconfig.h": "c"
+    "sdkconfig.h": "c",
+    "http_server.h": "c",
+    "blufi_example.h": "c"
   },
   "C_Cpp.errorSquiggles": "enabled"
 }
