@@ -4,12 +4,17 @@
   "idf.openOcdConfigs": [
     "board/esp32-bridge.cfg"
   ],
-  "idf.port": "/dev/ttyUSB0",
+  "idf.port": "/dev/ttyACM1",
   "idf.flashType": "UART",
   "files.associations": {
+    "*.common": "makefile",
+    "*.arm": "makefile",
+    "*.make": "makefile",
     "sdkconfig.h": "c",
     "http_server.h": "c",
-    "blufi_example.h": "c"
+    "blufi_example.h": "c",
+    "esp_blufi_api.h": "c",
+    "blufi_wrap.h": "c"
   },
   "C_Cpp.errorSquiggles": "enabled"
 }

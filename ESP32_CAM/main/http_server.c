@@ -6,6 +6,7 @@
  */
 
 #include <http_server.h>
+#include <esp_log.h>
 
 #include <esp_camera.h>
 #include <esp_timer.h>
@@ -154,9 +155,11 @@ httpd_handle_t start_webserver(void)
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.lru_purge_enable = true;
 
+    esp_err_t ret;
+
     // Start the httpd server
     ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
-    if (httpd_start(&server, &config) == ESP_OK) {
+    if ((ret = httpd_start(&server, &config)) == ESP_OK) {
         // Set URI handlers
         ESP_LOGI(TAG, "Registering URI handlers");
         httpd_register_uri_handler(server, &camera_uri);
@@ -164,7 +167,7 @@ httpd_handle_t start_webserver(void)
         return server;
     }
 
-    ESP_LOGI(TAG, "Error starting server!");
+    ESP_LOGI(TAG, "Error starting server!(%d)", ret);
     return NULL;
 }
 

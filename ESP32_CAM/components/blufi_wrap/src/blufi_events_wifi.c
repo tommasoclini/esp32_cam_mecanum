@@ -1,3 +1,17 @@
+/*
+ * SPDX-FileCopyrightText: 2021-2022 Espressif Systems (Shanghai) CO LTD
+ *
+ * SPDX-License-Identifier: Unlicense OR CC0-1.0
+ */
+
+
+/****************************************************************************
+* This is a demo for bluetooth config wifi connection to ap. You can config ESP32 to connect a softap
+* or config ESP32 as a softap to be connected by other device. APP can be downloaded from github
+* android source code: https://github.com/EspressifApp/EspBlufi
+* iOS source code: https://github.com/EspressifApp/EspBlufiForiOS
+****************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +24,9 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
+#if CONFIG_BT_CONTROLLER_ENABLED || !CONFIG_BT_NIMBLE_ENABLED
 #include "esp_bt.h"
+#endif
 
 #include "esp_blufi_api.h"
 #include "blufi_example.h"
@@ -48,9 +64,6 @@ static int gl_sta_ssid_len;
 static wifi_sta_list_t gl_sta_list;
 static bool gl_sta_is_connecting = false;
 static esp_blufi_extra_info_t gl_sta_conn_info;
-
-static esp_netif_t *sta_netif;
-static esp_netif_t *ap_netif;
 
 static void example_record_wifi_conn_info(int rssi, uint8_t reason)
 {
@@ -197,6 +210,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         wifi_ap_record_t *ap_list = (wifi_ap_record_t *)malloc(sizeof(wifi_ap_record_t) * apCount);
         if (!ap_list) {
             BLUFI_ERROR("malloc error, ap_list is NULL");
+            esp_wifi_clear_ap_list();
             break;
         }
         ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&apCount, ap_list));
@@ -247,16 +261,15 @@ void initialise_wifi(void)
     ESP_ERROR_CHECK(esp_netif_init());
     wifi_event_group = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-    sta_netif = esp_netif_create_default_wifi_sta();
+    esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
     assert(sta_netif);
-    ap_netif = esp_netif_create_default_wifi_ap();
+    esp_netif_t *ap_netif = esp_netif_create_default_wifi_ap();
     assert(ap_netif);
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &ip_event_handler, NULL));
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
-    //ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_APSTA) );
     example_record_wifi_conn_info(EXAMPLE_INVALID_RSSI, EXAMPLE_INVALID_REASON);
     ESP_ERROR_CHECK( esp_wifi_start() );
 }
@@ -268,18 +281,6 @@ esp_blufi_callbacks_t blufi_example_callbacks = {
     .decrypt_func = blufi_aes_decrypt,
     .checksum_func = blufi_crc_checksum,
 };
-
-static esp_err_t blufi_wrap_send_netif_ip_info(esp_netif_ip_info_t* netif_info, const char* tag){
-    char buff[128];
-    if (netif_info == NULL)
-        return ESP_FAIL;
-    int len = snprintf(buff, sizeof(buff), "%s IP: " IPSTR " \r\nGW: " IPSTR "\r\nNMK: " IPSTR, tag, IP2STR(&netif_info->ip), IP2STR(&netif_info->gw), IP2STR(&netif_info->netmask));
-    if (len > 0)
-        esp_blufi_send_custom_data((unsigned char*)buff, len);
-    else
-        return ESP_FAIL;
-    return ESP_OK;
-}
 
 static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_param_t *param)
 {
@@ -329,15 +330,8 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
     case ESP_BLUFI_EVENT_GET_WIFI_STATUS: {
         wifi_mode_t mode;
         esp_blufi_extra_info_t info;
-        esp_netif_ip_info_t netif_info;
 
         esp_wifi_get_mode(&mode);
-
-        if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA)
-        {
-            esp_netif_get_ip_info(ap_netif, &netif_info);
-            blufi_wrap_send_netif_ip_info(&netif_info, "AP");
-        }
 
         if (gl_sta_connected) {
             memset(&info, 0, sizeof(esp_blufi_extra_info_t));
@@ -346,9 +340,6 @@ static void example_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_para
             info.sta_ssid = gl_sta_ssid;
             info.sta_ssid_len = gl_sta_ssid_len;
             esp_blufi_send_wifi_conn_report(mode, gl_sta_got_ip ? ESP_BLUFI_STA_CONN_SUCCESS : ESP_BLUFI_STA_NO_IP, softap_get_current_connection_number(), &info);
-            
-            esp_netif_get_ip_info(sta_netif, &netif_info);
-            blufi_wrap_send_netif_ip_info(&netif_info, "STA");
         } else if (gl_sta_is_connecting) {
             esp_blufi_send_wifi_conn_report(mode, ESP_BLUFI_STA_CONNECTING, softap_get_current_connection_number(), &gl_sta_conn_info);
         } else {
