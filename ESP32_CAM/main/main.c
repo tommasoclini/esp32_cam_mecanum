@@ -1,16 +1,4 @@
 #include <esp_log.h>
-#include <esp_system.h>
-#include "esp_wifi.h"
-#include "esp_event.h"
-#include "esp_log.h"
-#include "nvs_flash.h"
-#include <nvs_flash.h>
-#include <sys/param.h>
-#include <string.h>
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
 
 #include <camera.h>
 #include <http_server.h>
@@ -34,7 +22,7 @@ void app_main(void)
         return;
     }
 
-    blufi_wrap_init();
+    blufi_wrap_init(true);
 
     ESP_LOGI(TAG, "BLUFI VERSION %04x\n", esp_blufi_get_version());
 

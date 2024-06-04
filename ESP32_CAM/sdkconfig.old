@@ -393,10 +393,10 @@ CONFIG_EXAMPLE_PORT=3333
 # end of Rover UDP server Configuration
 
 #
-# blufi_wrap Configuration
+# Example Configuration
 #
 CONFIG_EXAMPLE_WIFI_CONNECTION_MAXIMUM_RETRY=2
-# end of blufi_wrap Configuration
+# end of Example Configuration
 
 #
 # Compiler options

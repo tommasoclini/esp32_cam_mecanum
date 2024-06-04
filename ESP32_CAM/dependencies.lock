@@ -1,4 +1,11 @@
 dependencies:
+  blufi_wrap:
+    component_hash: c5d711d12899430af85471edcabbee66564d69296e4807e3a93e3d65887c5373
+    source:
+      git: https://github.com/Tizio1234/esp_blufi_wrapper.git
+      path: blufi_wrap
+      type: git
+    version: 8ec05c4b967f2ddb1964fb07803205726f5910d8
   espressif/esp32-camera:
     component_hash: b8ac31f1c94f5f051f4a19b7c7ccdb1ee53fcb63f13b340c496ba178bdd6305a
     source:
@@ -10,6 +17,6 @@ dependencies:
     source:
       type: idf
     version: 5.2.1
-manifest_hash: f7dcae8650c8e083b62793d6b6b35d58c97ed1a74d551efbce65bfa1c63154a9
+manifest_hash: 7eab04697ef42fadb9c98fdaf6e97e8bcb7bd1326fa8f9beb82a31e34fbc9553
 target: esp32
 version: 1.0.0

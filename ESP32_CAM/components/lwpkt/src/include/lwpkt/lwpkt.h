@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (c) 2023 Tilen MAJERLE
+ * Copyright (c) 2024 Tilen MAJERLE
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -29,7 +29,7 @@
  * This file is part of LwPKT - Lightweight packet protocol library.
  *
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
- * Version:         v1.2.0
+ * Version:         v1.3.0
  */
 #ifndef LWPKT_HDR_H
 #define LWPKT_HDR_H
@@ -57,10 +57,12 @@ typedef enum {
     LWPKT_STATE_FROM,         /*!< Packet waits for "packet from" byte */
     LWPKT_STATE_TO,           /*!< Packet waits for "packet to" byte */
     LWPKT_STATE_CMD,          /*!< Packet waits for "packet cmd" byte */
+    LWPKT_STATE_FLAGS,        /*!< Packet waits for "packet flags" byte (custom user flags) */
     LWPKT_STATE_LEN,          /*!< Packet waits for (multiple) data length bytes */
     LWPKT_STATE_DATA,         /*!< Packet waits for actual data bytes */
     LWPKT_STATE_CRC,          /*!< Packet waits for CRC data */
     LWPKT_STATE_STOP,         /*!< Packet waits for stop byte */
+    LWPKT_STATE_END,          /*!< Last entry */
 } lwpkt_state_t;
 
 /**
@@ -81,7 +83,7 @@ typedef enum {
  * \brief           CRC structure for packet
  */
 typedef struct {
-    uint8_t crc; /*!< Current CRC value */
+    uint32_t crc; /*!< Current CRC value */
 } lwpkt_crc_t;
 
 /* Forward declaration */
@@ -141,18 +143,23 @@ typedef struct lwpkt {
 #if LWPKT_CFG_USE_EVT || __DOXYGEN__
     lwpkt_evt_fn evt_fn; /*!< Global event function for read and write operation */
 #endif                   /* LWPKT_CFG_USE_EVT || __DOXYGEN__ */
+    uint8_t flags;       /*!< List of flags */
 
     struct {
         lwpkt_state_t state; /*!< Actual packet state machine */
 #if LWPKT_CFG_USE_CRC || __DOXYGEN__
-        lwpkt_crc_t crc; /*!< Packet CRC byte */
-#endif                   /* LWPKT_CFG_USE_CRC || __DOXYGEN__ */
+        lwpkt_crc_t crc;   /*!< Packet CRC object */
+        uint32_t crc_data; /*!< CRC data received from the other side */
+#endif                     /* LWPKT_CFG_USE_CRC || __DOXYGEN__ */
 #if LWPKT_CFG_USE_ADDR || __DOXYGEN__
         lwpkt_addr_t from; /*!< Device address packet is coming from */
         lwpkt_addr_t to;   /*!< Device address packet is intended for */
 #endif                     /* LWPKT_CFG_USE_ADDR || __DOXYGEN__ */
+#if LWPKT_CFG_USE_FLAGS || __DOXYGEN__
+        uint32_t flags; /*!< Custom flags */
+#endif                  /* LWPKT_CFG_USE_FLAGS || __DOXYGEN__ */
 #if LWPKT_CFG_USE_CMD || __DOXYGEN__
-        uint8_t cmd;  /*!< Command packet */
+        uint32_t cmd; /*!< Command packet */
 #endif                /* LWPKT_CFG_USE_CMD || __DOXYGEN__ */
         size_t len;   /*!< Number of bytes to receive */
         size_t index; /*!< General index variable for multi-byte parts of packet */
@@ -166,13 +173,25 @@ lwpktr_t lwpkt_write(lwpkt_t* pkt,
 #if LWPKT_CFG_USE_ADDR || __DOXYGEN__
                      lwpkt_addr_t to,
 #endif /* LWPKT_CFG_USE_ADDR || __DOXYGEN__ */
+#if LWPKT_CFG_USE_FLAGS || __DOXYGEN__
+                     uint32_t flags,
+#endif /* LWPKT_CFG_USE_FLAGS || __DOXYGEN__ */
 #if LWPKT_CFG_USE_CMD || __DOXYGEN__
-                     uint8_t cmd,
+                     uint32_t cmd,
 #endif /* LWPKT_CFG_USE_CMD || __DOXYGEN__ */
                      const void* data, size_t len);
 lwpktr_t lwpkt_reset(lwpkt_t* pkt);
 lwpktr_t lwpkt_process(lwpkt_t* pkt, uint32_t time);
 lwpktr_t lwpkt_set_evt_fn(lwpkt_t* pkt, lwpkt_evt_fn evt_fn);
+
+/* Functions available as conditional build */
+void lwpkt_set_addr_enabled(lwpkt_t* pkt, uint8_t enable);
+void lwpkt_set_addr_extended_enabled(lwpkt_t* pkt, uint8_t enable);
+void lwpkt_set_flags_enabled(lwpkt_t* pkt, uint8_t enable);
+void lwpkt_set_cmd_enabled(lwpkt_t* pkt, uint8_t enable);
+void lwpkt_set_cmd_extended_enabled(lwpkt_t* pkt, uint8_t enable);
+void lwpkt_set_crc_enabled(lwpkt_t* pkt, uint8_t enable);
+void lwpkt_set_crc32_enabled(lwpkt_t* pkt, uint8_t enable);
 
 /**
  * \brief           Get address from where packet was sent
@@ -207,7 +226,14 @@ lwpktr_t lwpkt_set_evt_fn(lwpkt_t* pkt, lwpkt_evt_fn evt_fn);
  * \param[in]       pkt: LwPKT instance
  * \return          Command data field
  */
-#define lwpkt_get_cmd(pkt)       (uint8_t)(((pkt) != NULL) ? ((pkt)->m.cmd) : 0)
+#define lwpkt_get_cmd(pkt)       (uint32_t)(((pkt) != NULL) ? ((pkt)->m.cmd) : 0)
+
+/**
+ * \brief           Get packet flags
+ * \param[in]       pkt: LwPKT instance
+ * \return          Last received packet flags
+ */
+#define lwpkt_get_flags(pkt)     (uint32_t)(((pkt) != NULL) ? ((pkt)->m.flags) : 0)
 
 /**
  * \brief           Check if packet `to` field address matches device address
