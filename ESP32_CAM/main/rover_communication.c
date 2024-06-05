@@ -208,6 +208,7 @@ static void udp_server_task(void *pvParameters)
                 rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string...
                 send_data_to_rover(rx_buffer, len);
                 ESP_LOGI(TAG, "Received %d bytes from %s:", len, addr_str);
+                //ESP_LOGI(TAG, "%s", rx_buffer);
 
                 /*int err = sendto(sock, rx_buffer, len, 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
                 if (err < 0) {
