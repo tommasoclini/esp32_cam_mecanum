@@ -1,6 +1,6 @@
 dependencies:
   espressif/esp32-camera:
-    version: "=2.0.6"
+    version: "^2.0.9"
   blufi_wrap:
     git: https://github.com/Tizio1234/esp_blufi_wrapper.git
     path: blufi_wrap

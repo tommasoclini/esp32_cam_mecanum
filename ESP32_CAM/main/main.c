@@ -9,11 +9,6 @@
 
 #include <blufi_wrap.h>
 
-// support IDF 5.x
-#ifndef portTICK_RATE_MS
-#define portTICK_RATE_MS portTICK_PERIOD_MS
-#endif
-
 static const char *TAG = "ESP32-CAM_ROVER";
 
 void app_main(void)
