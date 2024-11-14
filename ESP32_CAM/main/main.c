@@ -5,7 +5,6 @@
 #include <rover_communication.h>
 
 #include <cJSON.h>
-#include <lwpkt/lwpkt.h>
 
 #include <blufi_wrap.h>
 
