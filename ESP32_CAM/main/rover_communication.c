@@ -22,11 +22,6 @@
 
 #include <rover_communication.h>
 
-// UDP socket related
-#define KEEPALIVE_IDLE CONFIG_EXAMPLE_KEEPALIVE_IDLE
-#define KEEPALIVE_INTERVAL CONFIG_EXAMPLE_KEEPALIVE_INTERVAL
-#define KEEPALIVE_COUNT CONFIG_EXAMPLE_KEEPALIVE_COUNT
-
 static const char *TAG = "rover communication";
 
 static void udp_server_task(void *);
