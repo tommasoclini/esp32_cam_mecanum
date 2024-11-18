@@ -38,9 +38,6 @@ static const char *TAG = "rover communication";
 
 #define BUF_SIZE 512
 
-#define UART_RX_RB_BUFFER_SIZE 256
-#define UART_TX_RB_BUFFER_SIZE 256
-
 static int send_data_to_rover(const void *src, size_t size);
 
 static esp_err_t udp_server_init();
